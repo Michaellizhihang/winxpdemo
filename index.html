@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Windows XP 安装程序</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: Tahoma, "Microsoft YaHei", sans-serif; font-size: 12px; }
+#screen { position: fixed; inset: 0; }
+
+.term { height: 100%; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+.term > div { min-height: 1.45em; }
+
+.bios { background: #000; color: #b8b8b8;
+        font: 15px/1.45 "Lucida Console","Courier New",monospace;
+        padding: 20px 24px; height: 100%; }
+
+.setup { background: #0000aa; color: #fff; height: 100%;
+         font: 15px/1.45 "Lucida Console","Courier New",monospace; }
+.setup-bar { background: #c0c0c0; color: #000; padding: 2px 10px;
+             font: 13px Tahoma,"Microsoft YaHei",sans-serif; }
+.setup .term { padding: 20px 26px; height: calc(100% - 22px); }
+
+.xpgui { height: 100%; display: flex; flex-direction: column;
+         background: #3a6ea5; font-family: Tahoma,"Microsoft YaHei",sans-serif; color: #fff; }
+.xpgui-top { height: 30px; display: flex; align-items: center; padding: 0 14px;
+             background: linear-gradient(to bottom,#1e4b9c,#0d3170);
+             font-weight: bold; border-bottom: 2px solid #f5a623; }
+.xpgui-body { flex: 1; display: flex; }
+.xpgui-left { width: 40%; padding: 70px 40px;
+              background: linear-gradient(160deg,#3f7fd0,#1b3f7d); }
+.xp-logo { font-size: 15px; line-height: 1.5; }
+.xp-logo b { font-size: 34px; letter-spacing: -.5px; }
+.xp-tag { margin-top: 24px; font-size: 13px; opacity: .85; font-style: italic; }
+.xpgui-right { flex: 1; background: #fff; color: #000; padding: 60px 50px; }
+.xpgui-right h2 { font-size: 20px; font-weight: normal; margin-bottom: 8px; }
+.xpgui-right p { color: #555; margin-bottom: 28px; }
+.xp-steps { list-style: none; margin-bottom: 28px; }
+.xp-steps li { padding: 6px 0 6px 24px; position: relative; color: #888; font-size: 13px; }
+.xp-steps li::before { content: "○"; position: absolute; left: 4px; }
+.xp-steps li.active { color: #000; font-weight: bold; }
+.xp-steps li.active::before { content: "●"; color: #1e6fd0; }
+.xp-steps li.done { color: #2a8a2a; }
+.xp-steps li.done::before { content: "✔"; color: #2a8a2a; }
+.xp-progress { height: 16px; border: 1px solid #7a9cc6; background: #f0f4fa;
+               border-radius: 2px; overflow: hidden; }
+.xp-progress i { display: block; height: 100%; width: 0;
+                 background: linear-gradient(to bottom,#8fd0ff,#1e6fd0 60%,#0d4ea0);
+                 transition: width .12s linear; }
+
+.oobe { height: 100%; display: flex; flex-direction: column;
+        background: linear-gradient(180deg,#6b8fd4 0%,#3a5fa8 40%,#1a3570 100%); }
+.oobe-top { height: 34px; background: linear-gradient(to bottom,#1e4b9c,#0d3170);
+            border-bottom: 2px solid #f5a623; }
+.oobe-body { flex: 1; display: flex; align-items: center; }
+.oobe-left { width: 44%; padding: 0 50px; color: #fff; }
+.oobe-left .xp-logo b { font-size: 40px; }
+.oobe-card { flex: 1; background: #fff; margin: 30px 60px 30px 0; border-radius: 5px;
+             padding: 44px 46px; box-shadow: 0 6px 26px rgba(0,0,0,.45); }
+.oobe-card h2 { font-size: 21px; font-weight: normal; margin-bottom: 6px; color: #1a3570; }
+.oobe-card .sub { color: #666; margin-bottom: 30px; font-size: 13px; }
+.oobe-card label { display: block; font-weight: bold; margin-bottom: 6px; }
+.oobe-card input { width: 100%; padding: 8px 10px; font-size: 14px; font-family: inherit;
+                   border: 1px solid #7f9db9; border-radius: 3px; outline: none; }
+.oobe-card input:focus { border-color: #1e6fd0; box-shadow: 0 0 4px rgba(30,111,208,.5); }
+.oobe-card .hint { color: #888; font-size: 11px; margin-top: 8px; }
+.oobe-card .actions { margin-top: 34px; text-align: right; }
+.oobe-card button { font-family: inherit; font-size: 13px; padding: 8px 22px; cursor: pointer;
+                    color: #fff; border: 1px solid #0d4ea0; border-radius: 3px;
+                    background: linear-gradient(to bottom,#5aa8f7,#1e6fd0 55%,#0d4ea0); }
+.oobe-card button:active { filter: brightness(.9); }
+
+.boot { height: 100%; display: flex; align-items: center; justify-content: center;
+        background: #000; color: #fff; flex-direction: column;
+        font-family: Tahoma,"Microsoft YaHei",sans-serif; }
+.boot .brand { font-size: 52px; letter-spacing: 6px; margin-bottom: 40px; }
+.boot .brand sup { font-size: 18px; }
+.boot .track { width: 260px; height: 14px; border: 1px solid #3a5f9a;
+               background: #000; border-radius: 2px; overflow: hidden; }
+.boot .track i { display: block; height: 100%; width: 0;
+                 background: linear-gradient(to right,#1e5fc7,#6fb0ff,#1e5fc7);
+                 transition: width .1s linear; }
+.boot .tip { margin-top: 22px; color: #7a9ec9; font-size: 12px; }
+
+#desktop { position: absolute; inset: 0; overflow: hidden; user-select: none;
+  background:
+    radial-gradient(ellipse 55% 35% at 18% 10%, rgba(255,255,255,.8), transparent 70%),
+    radial-gradient(ellipse 45% 28% at 72% 6%,  rgba(255,255,255,.6), transparent 70%),
+    linear-gradient(to bottom,#17509f 0%,#2c78d4 20%,#57a4ec 36%,
+      #9ecbf2 45%,#b7dd6b 52%,#7ac33e 64%,#3d8c1e 100%);
+}
+#icons { position: absolute; top: 8px; left: 8px; bottom: 40px;
+         display: flex; flex-direction: column; flex-wrap: wrap; align-content: flex-start; }
+.icon { width: 84px; padding: 6px 4px; margin: 4px; display: flex; flex-direction: column;
+        align-items: center; gap: 5px; color: #fff; text-align: center; line-height: 1.25;
+        text-shadow: 1px 1px 3px rgba(0,0,0,.85); border-radius: 3px; cursor: default; }
+.icon .emoji { font-size: 34px; line-height: 1; filter: drop-shadow(1px 2px 2px rgba(0,0,0,.45)); }
+.icon.selected { background: rgba(49,106,197,.55); outline: 1px dotted rgba(255,255,255,.9); }
+
+#startMenu { position: absolute; left: 0; bottom: 30px; width: 380px; display: none;
+             z-index: 9000; background: #fff; border: 1px solid #0a4a9a; border-bottom: none;
+             border-radius: 8px 8px 0 0; box-shadow: 3px -2px 14px rgba(0,0,0,.5); overflow: hidden; }
+#startMenu.open { display: block; }
+.sm-header { height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 12px;
+             color: #fff; font-size: 15px; font-weight: bold; text-shadow: 1px 1px 2px #0a3a7a;
+             background: linear-gradient(to bottom,#1c6fe0 0%,#3f9bf0 12%,#1a63d8 55%,#0d47ab 100%);
+             border-bottom: 2px solid #f5a623; }
+.sm-header .avatar { width: 38px; height: 38px; border-radius: 4px; display: flex;
+                     align-items: center; justify-content: center; font-size: 22px;
+                     background: linear-gradient(135deg,#ffe08a,#f0a020);
+                     border: 2px solid rgba(255,255,255,.8); }
+.sm-body { display: flex; }
+.sm-left { flex: 1; padding: 6px 0; }
+.sm-right { width: 152px; padding: 6px 0; background: linear-gradient(to right,#d3e3fb,#b3d0f7);
+            border-left: 1px solid #a8c6ef; }
+.sm-item { display: flex; align-items: center; gap: 9px; padding: 7px 12px; cursor: default; }
+.sm-item:hover { background: #2f71cd; color: #fff; }
+.sm-right .sm-item { font-weight: bold; font-size: 11px; }
+.sm-footer { height: 40px; display: flex; justify-content: flex-end; align-items: center;
+             gap: 14px; padding: 0 16px; background: linear-gradient(to bottom,#4282d6,#1a56b8);
+             border-top: 1px solid #6ba0e8; }
+.sm-footer button { background: none; border: none; color: #fff; font-size: 12px; cursor: pointer;
+                    display: flex; align-items: center; gap: 5px;
+                    padding: 4px 6px; border-radius: 3px; }
+.sm-footer button:hover { background: rgba(255,255,255,.2); }
+
+.taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 30px;
+           display: flex; align-items: stretch; z-index: 10000;
+           box-shadow: inset 0 1px 0 #5a9ef5;
+           background: linear-gradient(to bottom,#245edb 0%,#3f8cf3 8%,
+             #245edb 16%,#245edb 90%,#1941a5 100%); }
+#startBtn { display: flex; align-items: center; gap: 7px; padding: 0 20px 2px 9px;
+            border: none; cursor: pointer;
+            font: italic bold 16px/1 Tahoma,"Microsoft YaHei",sans-serif;
+            color: #fff; text-shadow: 1px 1px 2px #0d4a0d; border-radius: 0 9px 9px 0;
+            background: linear-gradient(to bottom,#63c163 0%,#3f9b3f 8%,
+              #2f8a2f 45%,#2b7d2b 55%,#1d5c1d 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.45); }
+#startBtn:active { filter: brightness(.92); }
+#taskbar-tasks { flex: 1; display: flex; align-items: center; gap: 3px;
+                 padding: 0 6px; overflow: hidden; }
+.task-btn { max-width: 165px; height: 23px; padding: 0 10px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            text-align: left; font-size: 11px; cursor: pointer; color: #fff;
+            border: 1px solid #1c4bb0; border-radius: 3px;
+            background: linear-gradient(to bottom,#4b92ec,#1e5fc7);
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.25); }
+.task-btn.active { background: linear-gradient(to bottom,#1b4fa8,#3d7fdc);
+                   box-shadow: inset 1px 1px 3px rgba(0,0,0,.5); }
+.tray { display: flex; align-items: center; gap: 9px; padding: 0 12px 0 10px;
+        color: #fff; font-size: 11px; border-left: 1px solid #0a4a9a;
+        box-shadow: inset 1px 0 0 rgba(255,255,255,.3);
+        background: linear-gradient(to bottom,#16a3f5 0%,#0b86e0 8%,
+          #0b7fdd 45%,#0d5cb8 100%); }
+
+.window { position: absolute; display: flex; flex-direction: column;
+          min-width: 240px; min-height: 140px;
+          background: #ece9d8; border: 3px solid #0054e3; border-radius: 8px 8px 0 0;
+          box-shadow: 2px 2px 14px rgba(0,0,0,.45); overflow: hidden; }
+.titlebar { height: 27px; flex: none; display: flex; align-items: center; gap: 6px;
+            padding: 0 3px 0 6px;
+            background: linear-gradient(to bottom,#0058ee 0%,#3593ff 9%,
+              #288eff 40%,#0054e3 88%,#0054e3 100%); }
+.window:not(.focused) .titlebar { background: linear-gradient(to bottom,#7ba7e8,#96b8ea 40%,#7aa0dd); }
+.titlebar .title { flex: 1; color: #fff; font-weight: bold;
+                   text-shadow: 1px 1px 2px rgba(0,0,0,.55);
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.controls { display: flex; gap: 2px; }
+.controls button { width: 21px; height: 21px; padding: 0;
+                   display: flex; align-items: center; justify-content: center;
+                   font-size: 11px; font-weight: bold; color: #fff;
+                   border: 1px solid rgba(255,255,255,.85); border-radius: 3px;
+                   cursor: pointer; text-shadow: 1px 1px 1px rgba(0,0,0,.4); }
+.btn-min, .btn-max { background: linear-gradient(to bottom,#5aa8f7,#2277e0 50%,#0a51c0); }
+.btn-close { background: linear-gradient(to bottom,#f7a189,#e05028 50%,#b6270a); }
+.win-body { flex: 1; overflow: auto; background: #fff;
+            border-top: 1px solid #0054e3; font-size: 12px; }
+.notepad { width: 100%; height: calc(100% - 26px); display: block;
+           border: none; outline: none; resize: none;
+           padding: 8px 10px; font: 13px/1.6 Consolas,"Courier New",monospace; }
+.file-row { display: flex; align-items: center; gap: 12px;
+            padding: 9px 16px; border-bottom: 1px solid #eee; cursor: default; }
+.file-row:hover { background: #eaf2fd; }
+.file-row .emoji { font-size: 28px; }
+</style>
+</head>
+<body>
+<div id="screen"></div>
+
+<script>
+/* ==================================================================
+   0. UUID 生成器（兼容 HTTP 非安全上下文）
+   ================================================================== */
+function uuid() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/* ==================================================================
+   1. 虚拟文件系统（IndexedDB）
+   ================================================================== */
+const DB_NAME = 'XP_VFS', DB_VER = 2;
+const NODES = 'nodes', META = 'meta', ROOT_ID = 'root';
+
+class VFS {
+  async init() {
+    this.db = await new Promise((res, rej) => {
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(NODES)) {
+          const s = db.createObjectStore(NODES, { keyPath: 'id' });
+          s.createIndex('parentId', 'parentId');
+        }
+        if (!db.objectStoreNames.contains(META)) {
+          db.createObjectStore(META, { keyPath: 'key' });
+        }
+      };
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+    return this;
+  }
+
+  tx(mode = 'readonly') { return this.db.transaction(NODES, mode).objectStore(NODES); }
+  mtx(mode = 'readonly') { return this.db.transaction(META, mode).objectStore(META); }
+  req(r) {
+    return new Promise((res, rej) => {
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+
+  async getMeta(key) { const r = await this.req(this.mtx().get(key)); return r ? r.value : undefined; }
+  setMeta(key, value) { return this.req(this.mtx('readwrite').put({ key, value })); }
+
+  get(id) { return this.req(this.tx().get(id)); }
+  children(parentId) { return this.req(this.tx().index('parentId').getAll(parentId)); }
+  async find(parentId, name) { return (await this.children(parentId)).find(n => n.name === name); }
+
+  async ensureRoot() {
+    if (!await this.get(ROOT_ID)) {
+      await this.req(this.tx('readwrite').add({
+        id: ROOT_ID, parentId: null, name: '', type: 'dir',
+        createdAt: Date.now(), updatedAt: Date.now()
+      }));
+    }
+  }
+
+  async wipe() {
+    await this.req(this.tx('readwrite').clear());
+    await this.req(this.mtx('readwrite').clear());
+    await this.ensureRoot();
+  }
+
+  async resolve(path) {
+    const parts = path.split('/').filter(Boolean);
+    let cur = await this.get(ROOT_ID);
+    if (!cur) return null;
+    for (const p of parts) {
+      cur = await this.find(cur.id, p);
+      if (!cur) return null;
+    }
+    return cur;
+  }
+
+  mkdir(parentId, name) {
+    const now = Date.now();
+    return this.req(this.tx('readwrite').add({
+      id: uuid(), parentId, name, type: 'dir',
+      createdAt: now, updatedAt: now
+    }));
+  }
+
+  async writeFile(parentId, name, content, mime = 'text/plain') {
+    const blob = content instanceof Blob ? content : new Blob([content], { type: mime });
+    const now = Date.now();
+    const node = await this.find(parentId, name);
+    if (node) {
+      node.content = blob; node.size = blob.size; node.updatedAt = now;
+      return this.req(this.tx('readwrite').put(node));
+    }
+    return this.req(this.tx('readwrite').add({
+      id: uuid(), parentId, name, type: 'file',
+      content: blob, size: blob.size, mime, createdAt: now, updatedAt: now
+    }));
+  }
+
+  async readFile(id) {
+    const n = await this.get(id);
+    return n && n.type === 'file' ? n.content.text() : null;
+  }
+
+  async remove(id) {
+    if (id === ROOT_ID) return;
+    for (const k of await this.children(id)) await this.remove(k.id);
+    return this.req(this.tx('readwrite').delete(id));
+  }
+}
+
+/* ==================================================================
+   2. 系统文件清单
+   ================================================================== */
+const SYSTEM_FILES = [
+  { t:'f', p:'/AUTOEXEC.BAT', c:'@echo off\r\nrem Windows XP 启动配置\r\n' },
+  { t:'f', p:'/BOOT.INI', c:'[boot loader]\r\ntimeout=30\r\ndefault=multi(0)disk(0)rdisk(0)partition(1)\\WINDOWS\r\n[operating systems]\r\nmulti(0)disk(0)rdisk(0)partition(1)\\WINDOWS="Microsoft Windows XP Professional" /fastdetect\r\n' },
+  { t:'f', p:'/NTDETECT.COM', c:'[NT 检测程序 · 二进制]' },
+  { t:'f', p:'/ntldr',        c:'[NT 引导加载程序 · 二进制]' },
+  { t:'f', p:'/pagefile.sys', c:'[页面文件 512 MB]' },
+  { t:'f', p:'/hiberfil.sys', c:'[休眠文件 256 MB]' },
+
+  { t:'d', p:'/WINDOWS' },
+  { t:'f', p:'/WINDOWS/explorer.exe', c:'[PE 可执行文件 · explorer.exe]' },
+  { t:'f', p:'/WINDOWS/notepad.exe',  c:'[PE 可执行文件 · notepad.exe]' },
+  { t:'f', p:'/WINDOWS/regedit.exe',  c:'[PE 可执行文件 · regedit.exe]' },
+  { t:'f', p:'/WINDOWS/win.ini', c:'; for 16-bit app support\r\n[fonts]\r\n[extensions]\r\n' },
+  { t:'f', p:'/WINDOWS/system.ini', c:'; 系统配置\r\n[386Enh]\r\nwoafont=dosapp.fon\r\n' },
+  { t:'f', p:'/WINDOWS/WindowsUpdate.log', c:'2001-10-25 09:00:00  初始化 Windows Update\r\n' },
+
+  { t:'d', p:'/WINDOWS/system32' },
+  { t:'f', p:'/WINDOWS/system32/kernel32.dll', c:'[系统 DLL · kernel32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/user32.dll',   c:'[系统 DLL · user32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/gdi32.dll',    c:'[系统 DLL · gdi32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/shell32.dll',  c:'[系统 DLL · shell32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/advapi32.dll', c:'[系统 DLL · advapi32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/ntdll.dll',    c:'[系统 DLL · ntdll.dll]' },
+  { t:'f', p:'/WINDOWS/system32/ole32.dll',    c:'[系统 DLL · ole32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/comctl32.dll', c:'[系统 DLL · comctl32.dll]' },
+  { t:'f', p:'/WINDOWS/system32/msvcrt.dll',   c:'[系统 DLL · msvcrt.dll]' },
+  { t:'f', p:'/WINDOWS/system32/ntoskrnl.exe', c:'[系统内核 · ntoskrnl.exe]' },
+  { t:'f', p:'/WINDOWS/system32/hal.dll',      c:'[硬件抽象层 · hal.dll]' },
+  { t:'f', p:'/WINDOWS/system32/winlogon.exe', c:'[登录管理器]' },
+  { t:'f', p:'/WINDOWS/system32/services.exe', c:'[服务控制管理器]' },
+  { t:'f', p:'/WINDOWS/system32/lsass.exe',    c:'[本地安全认证]' },
+  { t:'f', p:'/WINDOWS/system32/csrss.exe',    c:'[客户端服务运行时]' },
+  { t:'f', p:'/WINDOWS/system32/smss.exe',     c:'[会话管理器]' },
+  { t:'f', p:'/WINDOWS/system32/cmd.exe',      c:'[命令解释器]' },
+  { t:'f', p:'/WINDOWS/system32/calc.exe',     c:'[计算器]' },
+  { t:'f', p:'/WINDOWS/system32/taskmgr.exe',  c:'[任务管理器]' },
+
+  { t:'d', p:'/WINDOWS/system32/config' },
+  { t:'f', p:'/WINDOWS/system32/config/SAM',      c:'[注册表配置单元 · SAM]' },
+  { t:'f', p:'/WINDOWS/system32/config/SYSTEM',   c:'[注册表配置单元 · SYSTEM]' },
+  { t:'f', p:'/WINDOWS/system32/config/SOFTWARE', c:'[注册表配置单元 · SOFTWARE]' },
+  { t:'f', p:'/WINDOWS/system32/config/SECURITY', c:'[注册表配置单元 · SECURITY]' },
+  { t:'f', p:'/WINDOWS/system32/config/DEFAULT',  c:'[注册表配置单元 · DEFAULT]' },
+
+  { t:'d', p:'/WINDOWS/system32/drivers' },
+  { t:'f', p:'/WINDOWS/system32/drivers/tcpip.sys',    c:'[驱动 · TCP/IP]' },
+  { t:'f', p:'/WINDOWS/system32/drivers/ndis.sys',     c:'[驱动 · NDIS]' },
+  { t:'f', p:'/WINDOWS/system32/drivers/disk.sys',     c:'[驱动 · 磁盘]' },
+  { t:'f', p:'/WINDOWS/system32/drivers/mouclass.sys', c:'[驱动 · 鼠标]' },
+  { t:'f', p:'/WINDOWS/system32/drivers/kbdclass.sys', c:'[驱动 · 键盘]' },
+
+  { t:'d', p:'/WINDOWS/system32/dllcache' },
+  { t:'d', p:'/WINDOWS/Fonts' },
+  { t:'f', p:'/WINDOWS/Fonts/tahoma.ttf', c:'[字体 · Tahoma]' },
+  { t:'f', p:'/WINDOWS/Fonts/arial.ttf',  c:'[字体 · Arial]' },
+  { t:'f', p:'/WINDOWS/Fonts/simsun.ttc', c:'[字体 · 宋体]' },
+  { t:'d', p:'/WINDOWS/Web' },
+  { t:'d', p:'/WINDOWS/Web/Wallpaper' },
+  { t:'f', p:'/WINDOWS/Web/Wallpaper/Bliss.jpg', c:'[JPEG 图像 · Bliss]' },
+  { t:'f', p:'/WINDOWS/Web/Wallpaper/Azul.jpg',  c:'[JPEG 图像 · Azul]' },
+  { t:'d', p:'/WINDOWS/Temp' },
+  { t:'d', p:'/WINDOWS/Help' },
+  { t:'f', p:'/WINDOWS/Help/help.chm', c:'[帮助文档]' },
+  { t:'d', p:'/WINDOWS/Media' },
+  { t:'f', p:'/WINDOWS/Media/ding.wav',   c:'[音频 · ding]' },
+  { t:'f', p:'/WINDOWS/Media/chimes.wav', c:'[音频 · chimes]' },
+
+  { t:'d', p:'/Program Files' },
+  { t:'d', p:'/Program Files/Internet Explorer' },
+  { t:'f', p:'/Program Files/Internet Explorer/iexplore.exe', c:'[PE · iexplore.exe]' },
+  { t:'d', p:'/Program Files/Windows Media Player' },
+  { t:'f', p:'/Program Files/Windows Media Player/wmplayer.exe', c:'[PE · wmplayer.exe]' },
+  { t:'d', p:'/Program Files/Outlook Express' },
+  { t:'f', p:'/Program Files/Outlook Express/msimn.exe', c:'[PE · msimn.exe]' },
+  { t:'d', p:'/Program Files/Windows NT' },
+  { t:'d', p:'/Program Files/Windows NT/Accessories' },
+  { t:'f', p:'/Program Files/Windows NT/Accessories/wordpad.exe', c:'[PE · 写字板]' },
+  { t:'f', p:'/Program Files/Windows NT/Accessories/mspaint.exe', c:'[PE · 画图]' },
+
+  { t:'d', p:'/Documents and Settings' },
+  { t:'d', p:'/Documents and Settings/Administrator' },
+  { t:'d', p:'/Documents and Settings/Administrator/桌面' },
+  { t:'d', p:'/Documents and Settings/Administrator/我的文档' },
+  { t:'d', p:'/Documents and Settings/Administrator/收藏夹' },
+  { t:'d', p:'/Documents and Settings/All Users' },
+  { t:'d', p:'/Documents and Settings/All Users/桌面' },
+  { t:'f', p:'/Documents and Settings/Administrator/我的文档/欢迎.txt',
+    c:'欢迎使用 Windows XP！\r\n\r\n这是安装程序写进 IndexedDB 的第一个文件。\r\n刷新页面它依然在。\r\n' },
+  { t:'f', p:'/Documents and Settings/Administrator/我的文档/安装说明.txt',
+    c:'这个系统不是模拟界面，而是真的把文件写进了浏览器的 IndexedDB。\r\n\r\n你可以：\r\n  1. 在记事本里编辑并保存\r\n  2. 刷新页面验证持久化\r\n  3. 在开发者工具 → Application → IndexedDB 里看到 XP_VFS\r\n' },
+  { t:'f', p:'/Documents and Settings/All Users/桌面/Internet Explorer.lnk', c:'[快捷方式]' },
+];
+
+/* ==================================================================
+   3. 工具
+   ================================================================== */
+const screenEl = document.getElementById('screen');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function mount(cls) {
+  screenEl.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = cls;
+  el.style.height = '100%';
+  screenEl.appendChild(el);
+  return el;
+}
+
+class Terminal {
+  constructor(el) { this.el = el; }
+  print(text = '') {
+    const d = document.createElement('div');
+    d.textContent = text;
+    this.el.appendChild(d);
+    this.el.scrollTop = this.el.scrollHeight;
+    return d;
+  }
+  async type(text, speed = 3) {
+    const d = this.print('');
+    for (let i = 0; i < text.length; i++) {
+      d.textContent = text.slice(0, i + 1);
+      if (speed) await sleep(speed);
+    }
+    this.el.scrollTop = this.el.scrollHeight;
+    return d;
+  }
+  async typeAll(lines, speed = 3) { for (const l of lines) await this.type(l, speed); }
+}
+
+const bar = (pct, w = 40) => {
+  const n = Math.round(pct / 100 * w);
+  return '[' + '█'.repeat(n) + '░'.repeat(w - n) + ']';
+};
+
+const splitPath = p => {
+  const i = p.lastIndexOf('/');
+  return { dir: p.slice(0, i) || '/', name: p.slice(i + 1) };
+};
+
+function autoAdvance(ms = 1200) {
+  return new Promise(resolve => {
+    let done = false;
+    const fire = () => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve('skip');
+    };
+    const cleanup = () => {
+      window.removeEventListener('mousedown', fire, true);
+      window.removeEventListener('touchstart', fire, true);
+      window.removeEventListener('keydown', fire, true);
+    };
+    window.addEventListener('mousedown', fire, true);
+    window.addEventListener('touchstart', fire, true);
+    window.addEventListener('keydown', fire, true);
+    setTimeout(() => { if (!done) { done = true; cleanup(); resolve('timeout'); } }, ms);
+  });
+}
+
+/* ==================================================================
+   4. 安装状态检查
+   ================================================================== */
+const CRITICAL_PATHS = [
+  '/WINDOWS/system32/ntoskrnl.exe',
+  '/WINDOWS/system32/kernel32.dll',
+  '/WINDOWS/system32/user32.dll',
+  '/WINDOWS/explorer.exe',
+  '/Program Files/Internet Explorer/iexplore.exe',
+];
+
+async function inspectInstallation(vfs) {
+  const phase = await vfs.getMeta('phase');
+  if (!phase)              return { state: 'fresh' };
+  if (phase === 'gui')     return { state: 'resume-gui' };
+  if (phase === 'oobe')    return { state: 'resume-oobe' };
+
+  if (phase === 'done') {
+    const missing = [];
+    for (const p of CRITICAL_PATHS) {
+      if (!await vfs.resolve(p)) missing.push(p);
+    }
+    const user = await vfs.getMeta('user');
+    if (!user) missing.push('用户配置 (meta.user)');
+    if (missing.length) return { state: 'corrupt', missing };
+    return { state: 'installed', user };
+  }
+  return { state: 'fresh' };
+}
+
+/* ==================================================================
+   5. 重装系统文件（修复用）
+   ================================================================== */
+async function reinstallSystemFiles(vfs) {
+  for (const f of SYSTEM_FILES) {
+    const { dir, name } = splitPath(f.p);
+    const parent = await vfs.resolve(dir);
+    if (!parent) continue;
+    if (f.t === 'd') {
+      if (!await vfs.find(parent.id, name)) await vfs.mkdir(parent.id, name);
+    } else {
+      const mime = /\.(txt|ini|log|bat)$/i.test(name) ? 'text/plain' : 'application/octet-stream';
+      await vfs.writeFile(parent.id, name, f.c, mime);
+    }
+  }
+}
+
+/* ==================================================================
+   6. 阶段一：BIOS + 文本安装
+   ================================================================== */
+async function runTextSetup(vfs) {
+  /* ---------- BIOS ---------- */
+  {
+    const scr = mount('bios');
+    const t = new Terminal(scr);
+    await t.typeAll([
+      'Award Modular BIOS v4.51PG, An Energy Star Ally',
+      'Copyright (C) 1984-2001, Award Software, Inc.',
+      '',
+      'ASUS P4B266 ACPI BIOS Revision 1011',
+      '',
+      'Pentium(R) 4 1.60GHz',
+      'Memory Test : 262144K OK',
+      '',
+      'Detecting IDE drives ...',
+      '  Primary Master   : WDC WD400BB-00DEA0      40.0 GB',
+      '  Primary Slave    : None',
+      '  Secondary Master : ASUS CD-S520/A',
+      '  Secondary Slave  : None',
+      '',
+      'Initializing USB Controllers .. Done.',
+      '',
+    ], 2);
+
+    await sleep(400);
+    await t.type('Booting from CD-ROM...', 3);
+    await sleep(700);
+
+    const black = document.createElement('div');
+    black.style.cssText =
+      'position:fixed;inset:0;background:#000;z-index:99999;' +
+      'opacity:0;transition:opacity .4s ease';
+    document.body.appendChild(black);
+    await sleep(20);
+    black.style.opacity = '1';
+    await sleep(500);
+    black.remove();
+  }
+
+  /* ---------- 欢迎 ---------- */
+  {
+    const scr = mount('setup');
+    scr.innerHTML = '<div class="setup-bar">Windows Setup</div><div class="term"></div>';
+    const t = new Terminal(scr.querySelector('.term'));
+    t.print('Windows Setup');
+    t.print('=============');
+    t.print('');
+    await t.typeAll([
+      '欢迎使用安装程序。',
+      '------------------------',
+      'Microsoft(R) Windows(R) XP Professional 安装程序',
+      '',
+      '  这部分安装程序准备在计算机上运行 Windows。',
+      '',
+      '  · 即将自动开始安装 Windows……',
+      '',
+    ], 2);
+    await autoAdvance(1400);
+  }
+
+  /* ---------- 许可协议 ---------- */
+  {
+    const scr = mount('setup');
+    scr.innerHTML = '<div class="setup-bar">Windows Setup</div><div class="term"></div>';
+    const t = new Terminal(scr.querySelector('.term'));
+    await t.typeAll([
+      'Microsoft 软件最终用户许可协议',
+      '==============================',
+      '',
+      '重要须知 — 请认真阅读：本最终用户许可协议（《协议》）是您',
+      '（个人或单一实体）与 Microsoft Corporation 之间达成的法律协议。',
+      '',
+      '  1. 许可证的授予。',
+      '  2. 其他权利和限制。',
+      '  3. 非商业性使用。',
+      '  4. 对最终用户许可协议的限制。',
+      '  5. 升级。',
+      '  6. 关于 MPEG-4 视频标准的技术支持。',
+      '  7. 产品的技术支持。',
+      '',
+      '继续即表示您接受本协议……',
+      '',
+    ], 2);
+    await autoAdvance(1400);
+  }
+
+  /* ---------- 分区 ---------- */
+  {
+    const scr = mount('setup');
+    scr.innerHTML = '<div class="setup-bar">Windows Setup</div><div class="term"></div>';
+    const t = new Terminal(scr.querySelector('.term'));
+    t.print('');
+    t.print('以下列表显示现有分区和未分区空间。');
+    t.print('');
+    t.print('  40950 MB 磁盘 0 (Id 0) 位于总线 0，atapi 上');
+    t.print('');
+    t.print('    C:  分区 1 (NTFS)      40944 MB ( 40936 MB 可用)');
+    t.print('        未分区空间              6 MB');
+    t.print('');
+    t.print('正在选择安装分区……');
+    t.print('');
+    await autoAdvance(1400);
+  }
+
+  /* ---------- 格式化（真·清库）---------- */
+  {
+    const scr = mount('setup');
+    scr.innerHTML = '<div class="setup-bar">Windows Setup</div><div class="term"></div>';
+    const t = new Terminal(scr.querySelector('.term'));
+    t.print('');
+    t.print('安装程序正在格式化 C: 分区……');
+    t.print('使用 NTFS 文件系统');
+    t.print('');
+
+    const line = t.print('');
+    const size = t.print('');
+    size.textContent = '    40936 MB';
+
+    await vfs.wipe();
+    await vfs.ensureRoot();
+
+    for (let i = 0; i <= 100; i += 2) {
+      line.textContent = '  已完成 ' + i + '%   ' + bar(i, 30);
+      await sleep(30);
+    }
+    t.print('');
+    t.print('格式化完成。');
+    await sleep(600);
+  }
+
+  /* ---------- 复制文件（真的写 IndexedDB）---------- */
+  {
+    const scr = mount('setup');
+    scr.innerHTML = '<div class="setup-bar">Windows Setup</div><div class="term"></div>';
+    const t = new Terminal(scr.querySelector('.term'));
+    t.print('');
+    t.print('请稍候，安装程序正在将文件复制到 Windows 安装文件夹。');
+    t.print('这可能需要几分钟的时间。');
+    t.print('');
+    const nameLine = t.print('  正在复制: ');
+    const barLine  = t.print('');
+    const pctLine  = t.print('  已完成 0%');
+    t.print('');
+
+    const total = SYSTEM_FILES.length;
+    let failed = 0;
+
+    for (let i = 0; i < total; i++) {
+      const f = SYSTEM_FILES[i];
+      try {
+        const { dir, name } = splitPath(f.p);
+        const parent = await vfs.resolve(dir);
+        if (!parent) {
+          console.warn('父目录缺失', dir);
+        } else if (f.t === 'd') {
+          if (!await vfs.find(parent.id, name)) await vfs.mkdir(parent.id, name);
+        } else {
+          const mime = /\.(txt|ini|log|bat)$/i.test(name) ? 'text/plain' : 'application/octet-stream';
+          await vfs.writeFile(parent.id, name, f.c, mime);
+        }
+      } catch (err) {
+        failed++;
+        console.error('写入失败:', f.p, err);
+      }
+
+      const pct = Math.round((i + 1) / total * 100);
+      nameLine.textContent = '  正在复制: ' + f.p.split('/').pop();
+      barLine.textContent  = '  ' + bar(pct, 36);
+      pctLine.textContent  = '  已完成 ' + pct + '%' + (failed ? '  (失败 ' + failed + ' 个)' : '');
+      await sleep(20 + Math.random() * 45);
+    }
+
+    t.print('');
+    await t.type('文件复制完毕。', 4);
+    if (failed) {
+      t.print('');
+      t.print('⚠ 有 ' + failed + ' 个文件写入失败，但不影响继续安装。');
+    }
+    t.print('');
+    t.print('安装程序将初始化 Windows XP 配置。');
+    t.print('  · 收集信息');
+    t.print('  · 动态更新');
+    t.print('  · 准备安装');
+    t.print('');
+    await sleep(800);
+    t.print('即将自动重新启动……');
+    await autoAdvance(1200);
+  }
+
+  await vfs.setMeta('phase', 'gui');
+  await runGuiSetup(vfs);
+}
+
+/* ==================================================================
+   7. 阶段二：图形界面安装
+   ================================================================== */
+async function runGuiSetup(vfs) {
+  const scr = mount('xpgui');
+  scr.innerHTML = `
+    <div class="xpgui-top">Windows XP Professional 安装程序</div>
+    <div class="xpgui-body">
+      <div class="xpgui-left">
+        <div class="xp-logo">Microsoft<sup>®</sup><br><b>Windows<sup>®</sup> XP</b></div>
+        <div class="xp-tag">让一切变得简单</div>
+      </div>
+      <div class="xpgui-right">
+        <h2>正在安装 Windows</h2>
+        <p>安装程序需要约 30 分钟完成。</p>
+        <ul class="xp-steps">
+          <li>收集信息</li>
+          <li>动态更新</li>
+          <li>准备安装</li>
+          <li>安装 Windows</li>
+          <li>完成安装</li>
+        </ul>
+        <div class="xp-progress"><i></i></div>
+      </div>
+    </div>`;
+
+  const steps = [...scr.querySelectorAll('.xp-steps li')];
+  const barEl = scr.querySelector('.xp-progress i');
+  const plan = [10, 12, 16, 34, 18];
+  const total = plan.reduce((a, b) => a + b, 0);
+  let done = 0;
+
+  for (let s = 0; s < plan.length; s++) {
+    steps.forEach((el, i) => el.classList.toggle('active', i === s));
+    for (let k = 0; k < plan[s]; k++) {
+      done++;
+      barEl.style.width = (done / total * 100).toFixed(1) + '%';
+      await sleep(40 + Math.random() * 60);
+    }
+    steps[s].classList.remove('active');
+    steps[s].classList.add('done');
+  }
+  await sleep(700);
+
+  await vfs.setMeta('phase', 'oobe');
+  await runOobe(vfs);
+}
+
+/* ==================================================================
+   8. 阶段三：OOBE 欢迎
+   ================================================================== */
+async function runOobe(vfs) {
+  const scr = mount('oobe');
+  scr.innerHTML = `
+    <div class="oobe-top"></div>
+    <div class="oobe-body">
+      <div class="oobe-left">
+        <div class="xp-logo">Microsoft<sup>®</sup><br><b>Windows<sup>®</sup> XP</b></div>
+        <div class="xp-tag">让一切变得简单</div>
+      </div>
+      <div class="oobe-card">
+        <h2>欢迎使用 Microsoft Windows XP</h2>
+        <div class="sub">设置完成后，即可开始使用计算机。</div>
+        <label for="userName">谁将使用这台计算机？</label>
+        <input id="userName" maxlength="20" value="Administrator" spellcheck="false">
+        <div class="hint">您的姓名将用于个性化 Windows 体验。可以随时在“控制面板”中更改。</div>
+        <div class="actions"><button id="oobeNext">下一步 →</button></div>
+      </div>
+    </div>`;
+
+  const input = scr.querySelector('#userName');
+  input.focus();
+  input.select();
+
+  const go = async () => {
+    if (go.done) return;
+    go.done = true;
+    const user = input.value.trim() || 'Administrator';
+    await vfs.setMeta('user', user);
+    await vfs.setMeta('installedAt', Date.now());
+    await vfs.setMeta('phase', 'done');
+    await startDesktop(vfs);
+  };
+  go.done = false;
+
+  scr.querySelector('#oobeNext').addEventListener('click', go);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  setTimeout(go, 15000);
+}
+
+/* ==================================================================
+   9. 启动画面
+   ================================================================== */
+async function showBootSplash() {
+  const el = mount('boot');
+  el.innerHTML = `
+    <div class="brand">Microsoft<sup>®</sup> Windows<sup>®</sup> XP</div>
+    <div class="track"><i id="bootBar"></i></div>
+    <div class="tip" id="bootTip">正在启动……</div>`;
+
+  const barEl = el.querySelector('#bootBar');
+  const tipEl = el.querySelector('#bootTip');
+  const tips = ['正在检测硬件……', '正在加载内核……', '正在初始化驱动程序……',
+                '正在启动服务……', '正在准备桌面……'];
+
+  for (let i = 0; i <= 50; i++) {
+    barEl.style.width = (i / 50 * 100) + '%';
+    tipEl.textContent = tips[Math.min(tips.length - 1, Math.floor(i / 10))];
+    await sleep(28 + Math.random() * 35);
+  }
+  await sleep(350);
+}
+
+/* ==================================================================
+   10. 损坏修复提示
+   ================================================================== */
+async function showRepairPrompt(info, vfs) {
+  const el = mount('setup');
+  el.innerHTML = '<div class="setup-bar">Windows 启动管理器</div><div class="term"></div>';
+  const t = new Terminal(el.querySelector('.term'));
+
+  await t.typeAll([
+    '',
+    'Windows 启动管理器',
+    '==================',
+    '',
+    '检测到系统文件缺失，安装已损坏：',
+    ...info.missing.map(m => '   ✗  ' + m),
+    '',
+    '10 秒内不操作将自动修复安装……',
+    '',
+  ], 3);
+
+  const btns = document.createElement('div');
+  btns.style.cssText = 'margin-top:14px;display:flex;gap:14px;';
+  btns.innerHTML = `
+    <button id="repairFix" style="font-family:inherit;font-size:13px;padding:6px 18px;
+      cursor:pointer;color:#fff;border:1px solid #fff;background:transparent">修复安装</button>
+    <button id="repairFresh" style="font-family:inherit;font-size:13px;padding:6px 18px;
+      cursor:pointer;color:#fff;border:1px solid #fff;background:transparent">全新安装</button>`;
+  t.el.appendChild(btns);
+
+  let acted = false;
+  const decide = async (mode) => {
+    if (acted) return;
+    acted = true;
+    if (mode === 'fresh') {
+      await vfs.wipe();
+      await vfs.setMeta('phase', '');
+      await runTextSetup(vfs);
+    } else {
+      await vfs.wipe();
+      await vfs.ensureRoot();
+      await reinstallSystemFiles(vfs);
+      await vfs.setMeta('user', 'Administrator');
+      await vfs.setMeta('installedAt', Date.now());
+      await vfs.setMeta('phase', 'done');
+      await startDesktop(vfs);
+    }
+  };
+
+  btns.querySelector('#repairFix').onclick   = () => decide('repair');
+  btns.querySelector('#repairFresh').onclick = () => decide('fresh');
+
+  setTimeout(() => decide('repair'), 10000);
+}
+
+/* ==================================================================
+   11. 桌面
+   ================================================================== */
+let vfsRef = null, zTop = 10, winCount = 0;
+
+async function startDesktop(vfs) {
+  vfsRef = vfs;
+  const user = (await vfs.getMeta('user')) || 'Administrator';
+  screenEl.innerHTML = desktopHTML(user);
+  bindDesktop();
+}
+
+function desktopHTML(user) {
+  return `
+  <div id="desktop">
+    <div id="icons">
+      <div class="icon" data-app="我的电脑"><span class="emoji">🖥️</span>我的电脑</div>
+      <div class="icon" data-app="Internet Explorer"><span class="emoji">🌐</span>Internet Explorer</div>
+      <div class="icon" data-app="记事本"><span class="emoji">📝</span>记事本</div>
+      <div class="icon" data-app="回收站"><span class="emoji">🗑️</span>回收站</div>
+    </div>
+
+    <div id="startMenu">
+      <div class="sm-header"><div class="avatar">👤</div><span>${user}</span></div>
+      <div class="sm-body">
+        <div class="sm-left">
+          <div class="sm-item" data-app="Internet Explorer"><span>🌐</span>Internet Explorer</div>
+          <div class="sm-item" data-app="记事本"><span>📝</span>记事本</div>
+          <div class="sm-item" data-app="我的电脑"><span>🖥️</span>我的电脑</div>
+          <div class="sm-item" data-app="回收站"><span>🗑️</span>回收站</div>
+        </div>
+        <div class="sm-right">
+          <div class="sm-item" data-dir="/Documents and Settings/Administrator/我的文档"><span>📁</span>我的文档</div>
+          <div class="sm-item" data-dir="/WINDOWS/Web/Wallpaper"><span>🖼️</span>我的图片</div>
+          <div class="sm-item" data-dir="/WINDOWS/system32"><span>⚙️</span>控制面板</div>
+        </div>
+      </div>
+      <div class="sm-footer">
+        <button>🔒 注销</button>
+        <button id="shutdownBtn">⏻ 关闭计算机</button>
+      </div>
+    </div>
+
+    <div class="taskbar">
+      <button id="startBtn">
+        <svg viewBox="0 0 20 20" width="17" height="17" style="transform:rotate(-8deg)">
+          <rect x="1"  y="2"  width="8" height="7" rx="1.4" fill="#f14f21"/>
+          <rect x="11" y="2"  width="8" height="7" rx="1.4" fill="#7eba00"/>
+          <rect x="1"  y="11" width="8" height="7" rx="1.4" fill="#00a3ee"/>
+          <rect x="11" y="11" width="8" height="7" rx="1.4" fill="#ffb900"/>
+        </svg>开始
+      </button>
+      <div id="taskbar-tasks"></div>
+      <div class="tray"><span>🔊</span><span>🛡️</span><span id="clock">--:--</span></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 窗口 ---------- */
+function createWindow({ title, width = 520, height = 340, html = '' }) {
+  const desktopEl = document.getElementById('desktop');
+  const win = document.createElement('div');
+  win.className = 'window';
+  win.style.width = width + 'px';
+  win.style.height = height + 'px';
+  const off = (winCount % 6) * 26;
+  win.style.left = (100 + off) + 'px';
+  win.style.top  = (50 + off) + 'px';
+  win.style.zIndex = ++zTop;
+  winCount++;
+
+  win.innerHTML = `
+    <div class="titlebar">
+      <span class="title">${title}</span>
+      <div class="controls">
+        <button class="btn-min" title="最小化">─</button>
+        <button class="btn-close" title="关闭">✕</button>
+      </div>
+    </div>
+    <div class="win-body">${html}</div>`;
+  desktopEl.appendChild(win);
+
+  const tb = document.createElement('button');
+  tb.className = 'task-btn';
+  tb.textContent = title;
+  document.getElementById('taskbar-tasks').appendChild(tb);
+
+  let minimized = false;
+  const focusWin = () => {
+    win.style.zIndex = ++zTop;
+    document.querySelectorAll('.window').forEach(w => w.classList.remove('focused'));
+    win.classList.add('focused');
+    document.querySelectorAll('.task-btn').forEach(b => b.classList.remove('active'));
+    tb.classList.add('active');
+  };
+  win.addEventListener('mousedown', focusWin, true);
+  win.querySelector('.btn-close').onclick = () => { win.remove(); tb.remove(); };
+  win.querySelector('.btn-min').onclick = () => {
+    minimized = true; win.style.display = 'none'; tb.classList.remove('active');
+  };
+  tb.onclick = () => {
+    if (minimized) { minimized = false; win.style.display = 'flex'; focusWin(); }
+    else if (tb.classList.contains('active')) {
+      minimized = true; win.style.display = 'none'; tb.classList.remove('active');
+    } else focusWin();
+  };
+
+  const barEl = win.querySelector('.titlebar');
+  barEl.addEventListener('mousedown', e => {
+    if (e.target.closest('.controls')) return;
+    const r = win.getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+    const move = ev => {
+      win.style.left = Math.max(-r.width + 80,
+        Math.min(window.innerWidth - 60, ev.clientX - dx)) + 'px';
+      win.style.top = Math.max(0,
+        Math.min(window.innerHeight - 60, ev.clientY - dy)) + 'px';
+    };
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+
+  focusWin();
+  return win;
+}
+
+/* ---------- 文件类型图标 ---------- */
+function fileEmoji(name, type) {
+  if (type === 'dir') return '📁';
+  if (/\.(exe|com)$/i.test(name)) return '⚙️';
+  if (/\.dll$/i.test(name)) return '🧩';
+  if (/\.(jpg|png|bmp)$/i.test(name)) return '🖼️';
+  if (/\.(wav|mp3)$/i.test(name)) return '🎵';
+  return '📄';
+}
+
+/* ---------- 文件夹浏览 ---------- */
+async function openFolder(folderId, title) {
+  const vfs = vfsRef;
+  const win = createWindow({ title, width: 620, height: 420 });
+  const body = win.querySelector('.win-body');
+  body.style.padding = '0';
+
+  const kids = (await vfs.children(folderId))
+    .sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name)
+                                       : a.type === 'dir' ? -1 : 1));
+
+  if (!kids.length) {
+    body.innerHTML = '<div style="padding:24px;color:#888">这个文件夹是空的。</div>';
+    return;
+  }
+
+  for (const n of kids) {
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.innerHTML = `
+      <span class="emoji">${fileEmoji(n.name, n.type)}</span>
+      <div>
+        <div style="font-weight:bold">${n.name}</div>
+        <div style="color:#777">${n.type === 'dir' ? '文件夹' : (n.size || 0) + ' 字节'}</div>
+      </div>`;
+    row.addEventListener('dblclick', async () => {
+      if (n.type === 'dir') openFolder(n.id, n.name);
+      else {
+        const text = await vfs.readFile(n.id);
+        openNotepad(text ?? '[二进制文件，无法以文本显示]', n.name, n.id, folderId);
+      }
+    });
+    body.appendChild(row);
+  }
+}
+
+/* ---------- 我的电脑 ---------- */
+async function openMyComputer() {
+  const vfs = vfsRef;
+  const win = createWindow({ title: '我的电脑', width: 640, height: 420 });
+  const body = win.querySelector('.win-body');
+  body.style.padding = '0';
+
+  const root = await vfs.resolve('/');
+  const kids = (await vfs.children(root.id))
+    .sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name)
+                                       : a.type === 'dir' ? -1 : 1));
+
+  body.innerHTML = '<div style="padding:14px 18px 6px;font-weight:bold;color:#0046a8">硬盘</div>';
+
+  for (const n of kids) {
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.style.padding = '7px 18px';
+    row.innerHTML = `
+      <span class="emoji">${fileEmoji(n.name, n.type)}</span>
+      <div>
+        <div style="font-weight:bold">${n.name}</div>
+        <div style="color:#777">${n.type === 'dir' ? '文件夹' : (n.size || 0) + ' 字节'}</div>
+      </div>`;
+    row.addEventListener('dblclick', async () => {
+      if (n.type === 'dir') openFolder(n.id, n.name);
+      else openNotepad(await vfs.readFile(n.id), n.name, n.id, root.id);
+    });
+    body.appendChild(row);
+  }
+}
+
+/* ---------- 记事本（默认保存到“我的文档”） ---------- */
+async function openNotepad(initial = '', fileName = '无标题', fileId = null, parentId = null) {
+  const vfs = vfsRef;
+  let currentFileId = fileId;
+  let currentParentId = parentId;
+  let currentFileName = fileName;
+
+  const win = createWindow({
+    title: `${currentFileName} - 记事本`,
+    width: 560, height: 400,
+    html: `
+      <textarea class="notepad" spellcheck="false"></textarea>
+      <div style="height:26px;display:flex;align-items:center;justify-content:flex-end;
+                  gap:8px;padding:0 10px;background:#ece9d8;border-top:1px solid #aca899">
+        <button id="npSave" style="font-family:inherit;padding:3px 14px;cursor:pointer">保存</button>
+      </div>`
+  });
+  const ta = win.querySelector('.notepad');
+  ta.value = initial;
+
+  const save = async () => {
+    const doc = await vfs.resolve('/Documents and Settings/Administrator/我的文档');
+    if (currentFileId) {
+      await vfs.writeFile(currentParentId, currentFileName, ta.value);
+    } else {
+      const defaultName = '无标题.txt';
+      await vfs.writeFile(doc.id, defaultName, ta.value);
+      const newFile = await vfs.find(doc.id, defaultName);
+      if (newFile) {
+        currentFileId = newFile.id;
+        currentParentId = doc.id;
+        currentFileName = defaultName;
+      }
+    }
+    const titleEl = win.querySelector('.title');
+    titleEl.textContent = '已保存 - 记事本';
+    setTimeout(() => { titleEl.textContent = `${currentFileName} - 记事本`; }, 1200);
+  };
+  win.querySelector('#npSave').onclick = save;
+  ta.focus();
+}
+
+/* ---------- IE（支持 iframe 加载真实网页） ---------- */
+function openIE() {
+  const win = createWindow({
+    title: 'Internet Explorer', width: 700, height: 450,
+    html: `
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div style="padding:6px 10px;background:#ece9d8;border-bottom:1px solid #aca899;
+                    display:flex;align-items:center;gap:8px">
+          <span>◀ ▶ ⟳</span>
+          <input id="ieUrl" type="text" value="https://example.com"
+                 style="flex:1;background:#fff;border:1px solid #7f9db9;
+                        padding:3px 6px;color:#333;outline:none">
+          <button id="ieGo" style="font-family:inherit;padding:3px 12px;cursor:pointer">转到</button>
+        </div>
+        <div style="flex:1;background:#fff;position:relative">
+          <iframe id="ieFrame" src="about:blank"
+                  style="border:none;width:100%;height:100%;background:#fff"></iframe>
+        </div>
+      </div>`
+  });
+
+  const urlInput = win.querySelector('#ieUrl');
+  const frame = win.querySelector('#ieFrame');
+
+  const go = () => {
+    let url = urlInput.value.trim();
+    if (!url) return;
+
+    // 智能补协议：IP / localhost 默认 http，其它默认 https
+    if (!/^[a-z]+:\/\//i.test(url)) {
+      if (/^(localhost|\d+\.\d+\.\d+\.\d+)(:\d+)?/.test(url)) {
+        url = 'http://' + url;
+      } else {
+        url = 'https://' + url;
+      }
+    }
+    urlInput.value = url;
+
+    // ★ 关键：清除 srcdoc，否则 src 永远不会生效
+    frame.removeAttribute('srcdoc');
+    frame.src = url;
+  };
+
+  win.querySelector('#ieGo').onclick = go;
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+
+  // 初始欢迎页用 srcdoc 渲染，第一次点“转到”时会被清掉
+  frame.srcdoc = `
+    <div style="font-family:Tahoma,sans-serif;padding:24px;color:#333">
+      <h1 style="color:#0054e3;font-size:24px;margin-bottom:8px">Welcome to Internet Explorer</h1>
+      <p style="color:#666;margin-bottom:18px">输入网址，按回车或点击“转到”浏览网页。</p>
+      <p style="line-height:1.8">
+        注意：由于浏览器的 <b>X-Frame-Options</b> 安全限制，部分网站（如 Google、百度）可能会拒绝在 iframe 中显示。
+      </p>
+      <p style="line-height:1.8">
+        可以试试 <a href="https://example.com" target="_blank">example.com</a> 或 <a href="https://www.bing.com" target="_blank">bing.com</a>。
+      </p>
+      <hr style="border:none;border-top:1px solid #ddd;margin:20px 0">
+      <p style="color:#888;font-size:12px">© 2001 Microsoft Corporation</p>
+    </div>
+  `;
+}
+
+/* ---------- 回收站 ---------- */
+function openRecycleBin() {
+  createWindow({
+    title: '回收站', width: 500, height: 320,
+    html: `<div style="padding:22px;color:#888">回收站是空的。<br><br>
+           <span style="font-size:11px">（那些被删掉的青春）</span></div>`
+  });
+}
+
+/* ---------- 启动器 ---------- */
+function launch(app) {
+  if (app === '我的电脑') return openMyComputer();
+  if (app === '记事本')   return openNotepad('', '无标题');
+  if (app === '回收站')   return openRecycleBin();
+  if (app === 'Internet Explorer') return openIE();
+}
+
+/* ---------- 桌面事件绑定 ---------- */
+function bindDesktop() {
+  const desktopEl = document.getElementById('desktop');
+  const startMenu = document.getElementById('startMenu');
+
+  document.getElementById('startBtn').onclick = e => {
+    e.stopPropagation();
+    startMenu.classList.toggle('open');
+  };
+  startMenu.addEventListener('mousedown', e => e.stopPropagation());
+  document.addEventListener('mousedown', () => startMenu.classList.remove('open'));
+
+  startMenu.querySelectorAll('.sm-item').forEach(el => {
+    el.onclick = () => {
+      startMenu.classList.remove('open');
+      if (el.dataset.dir) {
+        vfsRef.resolve(el.dataset.dir).then(n => n && openFolder(n.id, el.textContent.trim()));
+      } else {
+        launch(el.dataset.app);
+      }
+    };
+  });
+
+  document.querySelectorAll('.icon').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    });
+    el.addEventListener('dblclick', () => launch(el.dataset.app));
+  });
+
+  desktopEl.addEventListener('mousedown', e => {
+    if (!e.target.closest('.window') && !e.target.closest('.icon')) {
+      document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+    }
+  });
+
+  document.getElementById('shutdownBtn').onclick = async () => {
+    const choice = prompt(
+      '要关闭计算机吗？\n\n  1 = 关闭\n  2 = 恢复出厂设置（清空所有文件）',
+      '1'
+    );
+    if (choice === '2') {
+      if (confirm('确定要恢复出厂设置吗？所有文件将被清空。')) {
+        await vfsRef.wipe();
+        await vfsRef.setMeta('phase', '');
+        await runTextSetup(vfsRef);
+      }
+    } else {
+      const info = await inspectInstallation(vfsRef);
+      if (info.state === 'installed') {
+        await showBootSplash();
+        await startDesktop(vfsRef);
+      } else {
+        await runTextSetup(vfsRef);
+      }
+    }
+  };
+
+  const tick = () => {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    document.getElementById('clock').textContent = `${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ==================================================================
+   12. 启动入口
+   ================================================================== */
+(async function boot() {
+  document.body.tabIndex = -1;
+  document.body.focus();
+  window.focus();
+
+  const vfs = await new VFS().init();
+  const info = await inspectInstallation(vfs);
+
+  switch (info.state) {
+    case 'installed':
+      await showBootSplash();
+      await startDesktop(vfs);
+      break;
+    case 'corrupt':
+      await showRepairPrompt(info, vfs);
+      break;
+    case 'resume-gui':
+      await runGuiSetup(vfs);
+      break;
+    case 'resume-oobe':
+      await runOobe(vfs);
+      break;
+    default:
+      await runTextSetup(vfs);
+  }
+})();
+</script>
+</body>
+</html>
